@@ -23,7 +23,7 @@ func (app *App) Start() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(app.Repository.Product.GetProductByID(args[0]))
+	fmt.Println(app.Repository.ProductOrder.GetOrdersInfo(args))
 
 	return nil
 }

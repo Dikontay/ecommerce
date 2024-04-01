@@ -7,3 +7,6 @@ type ProductOrder struct {
 	Quantity       int     `json:"quantity"`
 	Discount       float64 `json:"discount"`
 }
+
+type ProductOrderDto struct {
+}
