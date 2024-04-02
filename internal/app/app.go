@@ -1,6 +1,8 @@
 package app
 
 import (
+	"ecommerce/internal/helpers"
+	"ecommerce/internal/models"
 	"ecommerce/internal/repository"
 	"fmt"
 	"os"
@@ -23,7 +25,8 @@ func (app *App) Start() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(app.Repository.ProductOrder.GetOrdersInfo(args))
+	orders, err := app.GetData(args)
+	fmt.Println(*orders[0], *orders[1])
 
 	return nil
 }
@@ -39,4 +42,33 @@ func validate(args []string) ([]int, error) {
 		argsInt = append(argsInt, number)
 	}
 	return argsInt, nil
+}
+
+func (a *App) GetData(orderIDs []int) (*models.OrderPageDTO, error) {
+	var data *models.OrderPageDTO
+	orders, err := a.Repository.ProductOrder.GetProductOrder(orderIDs[0])
+	if err != nil {
+		return nil, err
+	}
+	productIDs := helpers.GetProductIdsFromStruct(orders)
+	products, err := a.Repository.Product.GetProductsByIDs(productIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	productShelve, err := a.Repository.ProductShelve.GetProductShelves(productIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	shelveIDs := helpers.GetShelveIdsFromStruct(productShelve)
+
+	shelves, err := a.Repository.Shelve.GetShelvesByIDs(shelveIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ordersDTO models.OrderInfoDTO
+
 }
