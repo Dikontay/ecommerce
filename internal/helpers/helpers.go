@@ -3,10 +3,10 @@ package helpers
 import "ecommerce/internal/models"
 
 func GetProductIdsFromStruct(productOrders []*models.ProductOrder) []int {
-	result := make([]int, 0)
+	var result []int
 
 	for i := range productOrders {
-		result = append(result, productOrders[i].ProductOrderID)
+		result = append(result, (*productOrders[i]).ProductID)
 	}
 	return result
 }

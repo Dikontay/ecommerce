@@ -7,13 +7,11 @@ type Order struct {
 }
 
 type OrderInfoDTO struct {
-	ProductName string
-	ProductID   int
-	OrderID     int
-	Quantity    int
+	Product      Product      //{id, name}
+	ProductOrder ProductOrder //{order_id, quantity}
 }
 
 type OrderPageDTO struct {
-	ShelveName string
-	Orders     []*OrderInfoDTO
+	Shelve *Shelve //{id, shelve name }
+	Orders []*OrderInfoDTO
 }

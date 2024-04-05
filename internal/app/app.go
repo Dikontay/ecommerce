@@ -5,6 +5,7 @@ import (
 	"ecommerce/internal/models"
 	"ecommerce/internal/repository"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 )
@@ -26,7 +27,11 @@ func (app *App) Start() error {
 		return err
 	}
 	orders, err := app.GetData(args)
-	fmt.Println(*orders[0], *orders[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(orders)
 
 	return nil
 }
@@ -44,31 +49,60 @@ func validate(args []string) ([]int, error) {
 	return argsInt, nil
 }
 
-func (a *App) GetData(orderIDs []int) (*models.OrderPageDTO, error) {
-	var data *models.OrderPageDTO
-	orders, err := a.Repository.ProductOrder.GetProductOrder(orderIDs[0])
+func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) {
+
+	var data = make(map[string][]models.OrderInfoDTO)
+
+	productOrders, err := a.Repository.ProductOrder.GetProductOrdersByIDs(orderIDs)
+
 	if err != nil {
+		fmt.Println("GET PRODUCTS BY ID ERR")
 		return nil, err
 	}
-	productIDs := helpers.GetProductIdsFromStruct(orders)
-	products, err := a.Repository.Product.GetProductsByIDs(productIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	productShelve, err := a.Repository.ProductShelve.GetProductShelves(productIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	shelveIDs := helpers.GetShelveIdsFromStruct(productShelve)
-
-	shelves, err := a.Repository.Shelve.GetShelvesByIDs(shelveIDs)
+	productIDs := helpers.GetProductIdsFromStruct(productOrders)
 
 	if err != nil {
+
 		return nil, err
 	}
 
-	var ordersDTO models.OrderInfoDTO
+	productShelves, err := a.Repository.ProductShelve.GetProductShelvesByProductIDs(productIDs)
+
+	if err != nil {
+
+		return nil, err
+	}
+
+	for i := range productShelves {
+		shelve, err := a.Repository.Shelve.GetShelveByID((*productShelves[i]).ShelveID)
+
+		if err != nil {
+
+			return nil, nil
+		}
+
+		product, err := a.Repository.Product.GetProductByID((*productShelves[i]).ProductID)
+		if err != nil {
+			fmt.Println("GET Product ERR")
+			return nil, err
+		}
+		productOrder, err := a.Repository.ProductOrder.GetProductOrderByID(productShelves[i].ProductID)
+		if err != nil {
+			return nil, err
+		}
+
+		data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: *product, ProductOrder: *productOrder})
+	}
+	return data, nil
 
 }
+
+//type OrderInfoDTO struct {
+//	Product      Product      //{id, name}
+//	ProductOrder ProductOrder //{order_id, quantity}
+//}
+//
+//type OrderPageDTO struct {
+//	Shelve Shelve //{id, shelve name }
+//	Orders []*OrderInfoDTO
+//}

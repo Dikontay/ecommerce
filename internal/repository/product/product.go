@@ -36,15 +36,10 @@ func (db *ProductStorage) GetProductByID(id int) (*models.Product, error) {
 }
 
 func (db *ProductStorage) GetProductsByIDs(productIDs []int) ([]*models.Product, error) {
-	query := `select * from products where ID = ?`
-
-	args := make([]interface{}, len(productIDs))
-	for i, id := range productIDs {
-		args[i] = id
-	}
+	query := `select * from products where ID in (?)`
 
 	products := make([]*models.Product, 0)
-	rows, err := db.db.Query(query, args)
+	rows, err := db.db.Query(query, productIDs)
 	if err != nil {
 		return nil, err
 	}
