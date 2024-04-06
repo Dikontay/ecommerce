@@ -12,6 +12,6 @@ type OrderInfoDTO struct {
 }
 
 type OrderPageDTO struct {
-	Shelve *Shelve //{id, shelve name }
+	Shelve *Shelf //{id, shelve name }
 	Orders []*OrderInfoDTO
 }

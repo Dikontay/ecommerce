@@ -2,9 +2,9 @@ package models
 
 import "database/sql"
 
-type Shelve struct {
-	ShelveID int    `json:"shelve_id"`
-	Name     string `json:"name"`
+type Shelf struct {
+	ShelfID int    `json:"shelve_id"`
+	Name    string `json:"name"`
 }
 
 type ShelveDTO struct {

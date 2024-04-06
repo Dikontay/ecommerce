@@ -1,19 +1,24 @@
-package shelve
+package shelf
 
 import (
 	"database/sql"
 	"ecommerce/internal/models"
 )
 
-type ShelveStorage struct {
+type ShelfStorage struct {
 	db *sql.DB
 }
 
-func NewShelveStorage(db *sql.DB) *ShelveStorage {
-	return &ShelveStorage{db: db}
+func NewShelfStorage(db *sql.DB) *ShelfStorage {
+	return &ShelfStorage{db: db}
 }
 
-func (s *ShelveStorage) GetShelveByID(shelveID int) (*models.Shelve, error) {
+type ShelfRepo interface {
+	GetShelveByID(shelveID int) (*models.Shelf, error)
+	GetShelvesByIDs(shelveIDs []int) ([]*models.Shelf, error)
+}
+
+func (s *ShelfStorage) GetShelveByID(shelveID int) (*models.Shelf, error) {
 	query := `select * from shelves where shelve_id = ?`
 	row := s.db.QueryRow(query, shelveID)
 
@@ -23,21 +28,21 @@ func (s *ShelveStorage) GetShelveByID(shelveID int) (*models.Shelve, error) {
 		return nil, err
 	}
 
-	shelve := &models.Shelve{
-		ShelveID: id,
-		Name:     name,
+	shelve := &models.Shelf{
+		ShelfID: id,
+		Name:    name,
 	}
 
 	return shelve, nil
 }
 
-func (s *ShelveStorage) GetShelvesByIDs(shelveIDs []int) ([]*models.Shelve, error) {
+func (s *ShelfStorage) GetShelvesByIDs(shelveIDs []int) ([]*models.Shelf, error) {
 	query := `select * from shelves where shelve_id = ?`
 	rows, err := s.db.Query(query, shelveIDs)
 	if err != nil {
 		return nil, err
 	}
-	var shelves []*models.Shelve
+	var shelves []*models.Shelf
 	for rows.Next() {
 		var id int
 		var name string
@@ -45,9 +50,9 @@ func (s *ShelveStorage) GetShelvesByIDs(shelveIDs []int) ([]*models.Shelve, erro
 			return nil, err
 		}
 
-		shelves = append(shelves, &models.Shelve{
-			ShelveID: id,
-			Name:     name,
+		shelves = append(shelves, &models.Shelf{
+			ShelfID: id,
+			Name:    name,
 		})
 	}
 

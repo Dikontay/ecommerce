@@ -9,3 +9,6 @@ type OrderStorage struct {
 func NewOrderStorage(db *sql.DB) *OrderStorage {
 	return &OrderStorage{db: db}
 }
+
+type OrderRepo interface {
+}

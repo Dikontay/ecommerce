@@ -12,15 +12,15 @@ type ProductOrderStorage struct {
 }
 
 type ProductOrderRepo interface {
-	GetProductOrderByID(orderID int) (*models.ProductOrder, error)
-	GetProductOrdersByIDs(orderIDs []int) ([]*models.ProductOrder, error)
+	GetProductOrderByID(orderID int) (models.ProductOrder, error)
+	GetProductOrdersByIDs(orderIDs []int) ([]models.ProductOrder, error)
 }
 
 func NewProductOrderStorage(db *sql.DB) *ProductOrderStorage {
 	return &ProductOrderStorage{db: db}
 }
 
-func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (*models.ProductOrder, error) {
+func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (models.ProductOrder, error) {
 	queryProductOrder := `SELECT Product_order_id, order_id, product_id, quantity FROM product_order WHERE order_id = ?`
 
 	row := s.db.QueryRow(queryProductOrder, orderID)
@@ -28,10 +28,10 @@ func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (*models.ProductO
 	var id, productID, quantity int
 
 	if err := row.Scan(&id, &orderID, &productID, &quantity); err != nil {
-		return nil, err
+		return models.ProductOrder{}, err
 	}
 
-	p := &models.ProductOrder{
+	p := models.ProductOrder{
 		ID:        id,
 		ProductID: productID,
 		OrderID:   orderID,
@@ -39,13 +39,13 @@ func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (*models.ProductO
 	}
 
 	if err := row.Err(); err != nil {
-		return nil, err
+		return models.ProductOrder{}, err
 	}
 
 	return p, nil
 }
 
-func (s *ProductOrderStorage) GetProductOrdersByIDs(orderIDs []int) ([]*models.ProductOrder, error) {
+func (s *ProductOrderStorage) GetProductOrdersByIDs(orderIDs []int) ([]models.ProductOrder, error) {
 	placeholders := strings.Repeat("?,", len(orderIDs)-1) + "?"
 	fmt.Println(placeholders)
 
@@ -63,13 +63,13 @@ func (s *ProductOrderStorage) GetProductOrdersByIDs(orderIDs []int) ([]*models.P
 		return nil, err
 	}
 	defer rows.Close()
-	var productOrders []*models.ProductOrder
+	var productOrders []models.ProductOrder
 	for rows.Next() {
 		var id, productID, orderID, quantity int
 		if err := rows.Scan(&id, &productID, &orderID, &quantity); err != nil {
 			return nil, err
 		}
-		productOrders = append(productOrders, &models.ProductOrder{
+		productOrders = append(productOrders, models.ProductOrder{
 			ID:        id,
 			ProductID: productID,
 			OrderID:   orderID,

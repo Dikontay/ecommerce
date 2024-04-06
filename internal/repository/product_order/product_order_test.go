@@ -62,17 +62,17 @@ func TestGetProductOrdersByIDs(t *testing.T) {
 
 	expected := []models.ProductOrder{{
 		ID:        1,
-		OrderID:   1,
-		ProductID: 2,
+		ProductID: 1,
+		OrderID:   2,
 		Quantity:  5,
 	}, {
 		ID:        2,
-		OrderID:   2,
 		ProductID: 2,
+		OrderID:   2,
 		Quantity:  4,
 	}}
 
-	if !reflect.DeepEqual(*productOrders, expected) {
+	if !reflect.DeepEqual(productOrders, expected) {
 		t.Errorf("expected %#v, got %#v", expected, productOrders)
 	}
 

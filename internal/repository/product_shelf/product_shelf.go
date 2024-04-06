@@ -7,15 +7,20 @@ import (
 	"strings"
 )
 
-type ProductShelveStorage struct {
+type ProductShelfStorage struct {
 	db *sql.DB
 }
 
-func NewProductShelveStorage(db *sql.DB) *ProductShelveStorage {
-	return &ProductShelveStorage{db: db}
+type ProductShelfRepo interface {
+	GetProductShelve(productID int) ([]models.ProductShelve, error)
+	GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelve, error)
 }
 
-func (s *ProductShelveStorage) GetProductShelve(productID int) ([]*models.ProductShelve, error) {
+func NewProductShelfStorage(db *sql.DB) *ProductShelfStorage {
+	return &ProductShelfStorage{db: db}
+}
+
+func (s *ProductShelfStorage) GetProductShelve(productID int) ([]models.ProductShelve, error) {
 	queryProductOrder := `select  shelve_id, isPrimary from product_shelve where product_id = ?`
 
 	rows, err := s.db.Query(queryProductOrder, productID)
@@ -23,7 +28,7 @@ func (s *ProductShelveStorage) GetProductShelve(productID int) ([]*models.Produc
 		return nil, err
 	}
 	defer rows.Close()
-	var p []*models.ProductShelve
+	var p []models.ProductShelve
 	for rows.Next() {
 		var shelveID int
 		var isPrimary bool
@@ -32,7 +37,7 @@ func (s *ProductShelveStorage) GetProductShelve(productID int) ([]*models.Produc
 			return nil, err
 		}
 
-		p = append(p, &models.ProductShelve{
+		p = append(p, models.ProductShelve{
 			ShelveID:  shelveID,
 			IsPrimary: isPrimary,
 		})
@@ -45,7 +50,7 @@ func (s *ProductShelveStorage) GetProductShelve(productID int) ([]*models.Produc
 	return p, nil
 }
 
-func (s *ProductShelveStorage) GetProductShelvesByProductIDs(productIDs []int) ([]*models.ProductShelve, error) {
+func (s *ProductShelfStorage) GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelve, error) {
 	placeholders := strings.Repeat("?,", len(productIDs)-1) + "?"
 
 	queryProductShelve := fmt.Sprintf(`SELECT shelve_id, product_id,  isPrimary FROM product_shelve WHERE product_id IN (%s)`, placeholders)
@@ -60,7 +65,7 @@ func (s *ProductShelveStorage) GetProductShelvesByProductIDs(productIDs []int) (
 		return nil, err
 	}
 
-	var productShelves []*models.ProductShelve
+	var productShelves []models.ProductShelve
 	for rows.Next() {
 		var shelveID, productID int
 		var isPrimary bool
@@ -69,7 +74,7 @@ func (s *ProductShelveStorage) GetProductShelvesByProductIDs(productIDs []int) (
 			return nil, err
 		}
 
-		productShelves = append(productShelves, &models.ProductShelve{
+		productShelves = append(productShelves, models.ProductShelve{
 			ShelveID:  shelveID,
 			IsPrimary: isPrimary,
 			ProductID: productID,
