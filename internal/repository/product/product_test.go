@@ -45,5 +45,10 @@ func TestGetProductByID(t *testing.T) {
 }
 
 func TestGetProductsByIDs(t *testing.T) {
+	db, mock := NewMock()
+	repo := NewProductStorage(db)
 
+	defer db.Close()
+
+	query := "SELECT ID, name, price FROM products WHERE id in \\?"
 }
