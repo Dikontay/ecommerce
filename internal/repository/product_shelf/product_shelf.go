@@ -1,4 +1,4 @@
-package product_shelve
+package product_shelf
 
 import (
 	"database/sql"

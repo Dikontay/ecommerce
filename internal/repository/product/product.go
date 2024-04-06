@@ -11,7 +11,7 @@ type ProductStorage struct {
 
 type ProductRepo interface {
 	GetProductByID(id int) (*models.Product, error)
-	GetAllProducts() (*[]models.Product, error)
+	GetProductsByIDs(productIDs []int) ([]*models.Product, error)
 }
 
 func NewProductStorage(db *sql.DB) *ProductStorage {
@@ -36,24 +36,24 @@ func (db *ProductStorage) GetProductByID(id int) (*models.Product, error) {
 }
 
 func (db *ProductStorage) GetProductsByIDs(productIDs []int) ([]*models.Product, error) {
-	query := `select * from products where ID in (?)`
+	query := `SELECT * FROM products WHERE ID IN (?)`
 
 	products := make([]*models.Product, 0)
 	rows, err := db.db.Query(query, productIDs)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		product := &models.Product{}
 
-		err = rows.Scan(&product.ID,
-			&product.Name,
-			&product.Price,
-		)
+		err = rows.Scan(&product.ID, &product.Name, &product.Price)
 		if err != nil {
 			return nil, err
 		}
+
+		products = append(products, product)
 	}
 
 	return products, nil
