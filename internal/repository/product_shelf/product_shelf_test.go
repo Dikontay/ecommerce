@@ -44,10 +44,8 @@ func TestGetProductShelvesByProductIDs(t *testing.T) {
 	}
 	defer db.Close()
 
-	// Setup the ProductShelfStorage with the mocked database
 	psrepo := NewProductShelfStorage(db)
 
-	// Sample product IDs to search for
 	productIDs := []int{1, 2}
 
 	placeholders := strings.Repeat("?,", len(productIDs)-1) + "?"
@@ -65,13 +63,11 @@ func TestGetProductShelvesByProductIDs(t *testing.T) {
 		t.Errorf("error was not expected while getting product shelves: %s", err)
 	}
 
-	// Define what we expect to receive
 	expected := []models.ProductShelf{
 		{ShelveID: 1, ProductID: productIDs[0], IsPrimary: true},
 		{ShelveID: 2, ProductID: productIDs[1], IsPrimary: false},
 	}
 
-	// Check that the returned slice is as expected
 	if len(productShelves) != len(expected) {
 		t.Errorf("expected %d product shelves, got %d", len(expected), len(productShelves))
 	}
@@ -81,7 +77,6 @@ func TestGetProductShelvesByProductIDs(t *testing.T) {
 		}
 	}
 
-	// Ensure all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}

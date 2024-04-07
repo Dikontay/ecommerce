@@ -74,14 +74,14 @@ func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) 
 	}
 
 	for i := range productShelves {
-		shelve, err := a.Repository.Shelve.GetShelveByID((*productShelves[i]).ShelveID)
+		shelve, err := a.Repository.Shelve.GetShelfByID(productShelves[i].ShelveID)
 
 		if err != nil {
 
 			return nil, nil
 		}
 
-		product, err := a.Repository.Product.GetProductByID((*productShelves[i]).ProductID)
+		product, err := a.Repository.Product.GetProductByID(productShelves[i].ProductID)
 		if err != nil {
 			fmt.Println("GET Product ERR")
 			return nil, err
@@ -91,7 +91,7 @@ func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) 
 			return nil, err
 		}
 
-		data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: *product, ProductOrder: *productOrder})
+		data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: product, ProductOrder: productOrder})
 	}
 	return data, nil
 
