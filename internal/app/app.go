@@ -31,7 +31,7 @@ func (app *App) Start() error {
 		log.Fatal(err)
 	}
 
-	fmt.Println(orders)
+	app.outputData(orders)
 
 	return nil
 }
@@ -86,23 +86,25 @@ func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) 
 			fmt.Println("GET Product ERR")
 			return nil, err
 		}
-		productOrder, err := a.Repository.ProductOrder.GetProductOrderByID(productShelves[i].ProductID)
-		if err != nil {
-			return nil, err
+		for j := range productOrders {
+			productOrder, err := a.Repository.ProductOrder.GetProductOrderByID(productOrders[j].OrderID)
+			if err != nil {
+				return nil, err
+			}
+			data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: product, ProductOrder: productOrder})
 		}
 
-		data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: product, ProductOrder: productOrder})
 	}
 	return data, nil
 
 }
 
-//type OrderInfoDTO struct {
-//	Product      Product      //{id, name}
-//	ProductOrder ProductOrder //{order_id, quantity}
-//}
-//
-//type OrderPageDTO struct {
-//	Shelve Shelve //{id, shelve name }
-//	Orders []*OrderInfoDTO
-//}
+func (a *App) outputData(data map[string][]models.OrderInfoDTO) {
+
+	for k, v := range data {
+		fmt.Printf("Стеллаж : %s\n", k)
+		for j := range v {
+			fmt.Printf("Заказ : %d, %s, %d штук \n", v[j].ProductOrder.OrderID, v[j].Product.Name, v[j].ProductOrder.Quantity)
+		}
+	}
+}
