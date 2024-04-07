@@ -12,48 +12,45 @@ type ProductShelfStorage struct {
 }
 
 type ProductShelfRepo interface {
-	GetProductShelve(productID int) ([]models.ProductShelve, error)
-	GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelve, error)
+	GetProductShelfByProductID(productID int) ([]models.ProductShelf, error)
+	GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelf, error)
 }
 
 func NewProductShelfStorage(db *sql.DB) *ProductShelfStorage {
 	return &ProductShelfStorage{db: db}
 }
 
-func (s *ProductShelfStorage) GetProductShelve(productID int) ([]models.ProductShelve, error) {
-	queryProductOrder := `select  shelve_id, isPrimary from product_shelve where product_id = ?`
+func (s *ProductShelfStorage) GetProductShelfByProductID(productID int) ([]models.ProductShelf, error) {
+	query := `SELECT shelf_id, is_primary FROM product_shelf WHERE product_id = ?`
 
-	rows, err := s.db.Query(queryProductOrder, productID)
+	rows, err := s.db.Query(query, productID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var p []models.ProductShelve
-	for rows.Next() {
-		var shelveID int
-		var isPrimary bool
 
-		if err := rows.Scan(&shelveID, &isPrimary); err != nil {
+	var productShelves []models.ProductShelf
+	for rows.Next() {
+		var ps models.ProductShelf
+		// Only scan the fields you need, assuming ProductID is already known
+		if err := rows.Scan(&ps.ShelveID, &ps.IsPrimary); err != nil {
 			return nil, err
 		}
-
-		p = append(p, models.ProductShelve{
-			ShelveID:  shelveID,
-			IsPrimary: isPrimary,
-		})
+		ps.ProductID = productID // Set the ProductID since it's known
+		productShelves = append(productShelves, ps)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return p, nil
+	return productShelves, nil
 }
 
-func (s *ProductShelfStorage) GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelve, error) {
+func (s *ProductShelfStorage) GetProductShelvesByProductIDs(productIDs []int) ([]models.ProductShelf, error) {
 	placeholders := strings.Repeat("?,", len(productIDs)-1) + "?"
 
-	queryProductShelve := fmt.Sprintf(`SELECT shelve_id, product_id,  isPrimary FROM product_shelve WHERE product_id IN (%s)`, placeholders)
+	queryProductShelve := fmt.Sprintf(`SELECT shelf_id, product_id,  isPrimary FROM product_shelf WHERE product_id IN (%s)`, placeholders)
 
 	args := make([]interface{}, len(productIDs))
 	for i, id := range productIDs {
@@ -65,7 +62,7 @@ func (s *ProductShelfStorage) GetProductShelvesByProductIDs(productIDs []int) ([
 		return nil, err
 	}
 
-	var productShelves []models.ProductShelve
+	var productShelves []models.ProductShelf
 	for rows.Next() {
 		var shelveID, productID int
 		var isPrimary bool
@@ -74,7 +71,7 @@ func (s *ProductShelfStorage) GetProductShelvesByProductIDs(productIDs []int) ([
 			return nil, err
 		}
 
-		productShelves = append(productShelves, models.ProductShelve{
+		productShelves = append(productShelves, models.ProductShelf{
 			ShelveID:  shelveID,
 			IsPrimary: isPrimary,
 			ProductID: productID,

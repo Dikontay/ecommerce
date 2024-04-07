@@ -1,6 +1,6 @@
 package models
 
-type ProductShelve struct {
+type ProductShelf struct {
 	ID        int  `json:"id"`
 	ProductID int  `json:"product_id"`
 	ShelveID  int  `json:"shelve_id"`

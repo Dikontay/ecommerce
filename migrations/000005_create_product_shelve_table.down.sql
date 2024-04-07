@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS product_shelve;
+DROP TABLE IF EXISTS product_shelf;

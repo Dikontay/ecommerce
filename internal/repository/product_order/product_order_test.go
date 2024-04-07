@@ -1,6 +1,7 @@
 package product_order
 
 import (
+	"database/sql/driver"
 	"ecommerce/internal/models"
 	"ecommerce/utils"
 	"fmt"
@@ -51,9 +52,10 @@ func TestGetProductOrdersByIDs(t *testing.T) {
 		AddRow(1, 1, 2, 5).
 		AddRow(2, 2, 2, 4)
 
+	args := []driver.Value{1, 2}
 	queryProductOrder := fmt.Sprintf(`SELECT Product_order_id, product_id, order_id, quantity FROM product_order WHERE order_id IN (%s)`, placeholders)
 
-	mock.ExpectQuery(regexp.QuoteMeta(queryProductOrder)).WillReturnRows(rows)
+	mock.ExpectQuery(regexp.QuoteMeta(queryProductOrder)).WithArgs(args...).WillReturnRows(rows)
 
 	productOrders, err := repo.GetProductOrdersByIDs(orderIDs)
 	if err != nil {

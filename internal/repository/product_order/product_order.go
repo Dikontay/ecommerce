@@ -47,7 +47,6 @@ func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (models.ProductOr
 
 func (s *ProductOrderStorage) GetProductOrdersByIDs(orderIDs []int) ([]models.ProductOrder, error) {
 	placeholders := strings.Repeat("?,", len(orderIDs)-1) + "?"
-	fmt.Println(placeholders)
 
 	queryProductOrder := fmt.Sprintf(`SELECT Product_order_id, product_id, order_id, quantity FROM product_order WHERE order_id IN (%s)`, placeholders)
 
