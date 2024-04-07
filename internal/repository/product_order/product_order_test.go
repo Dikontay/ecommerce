@@ -34,7 +34,7 @@ func TestGetProductOrderByID(t *testing.T) {
 		AddRow(productOrder.ID, productOrder.OrderID, productOrder.ProductID, productOrder.Quantity)
 
 	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(productOrder.OrderID).WillReturnRows(rows)
-	p, err := repo.GetProductOrderByID(productOrder.OrderID)
+	p, err := repo.GetProductOrderByOrderID(productOrder.OrderID)
 	assert.NotNil(t, p)
 	assert.NoError(t, err)
 }
@@ -57,7 +57,7 @@ func TestGetProductOrdersByIDs(t *testing.T) {
 
 	mock.ExpectQuery(regexp.QuoteMeta(queryProductOrder)).WithArgs(args...).WillReturnRows(rows)
 
-	productOrders, err := repo.GetProductOrdersByIDs(orderIDs)
+	productOrders, err := repo.GetProductOrdersByOrderIDs(orderIDs)
 	if err != nil {
 		t.Errorf("error was not expected while getting data from product_order table %s", err)
 	}

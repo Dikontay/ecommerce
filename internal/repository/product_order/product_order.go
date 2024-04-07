@@ -12,15 +12,15 @@ type ProductOrderStorage struct {
 }
 
 type ProductOrderRepo interface {
-	GetProductOrderByID(orderID int) (models.ProductOrder, error)
-	GetProductOrdersByIDs(orderIDs []int) ([]models.ProductOrder, error)
+	GetProductOrderByOrderID(orderID int) (models.ProductOrder, error)
+	GetProductOrdersByOrderIDs(orderIDs []int) ([]models.ProductOrder, error)
 }
 
 func NewProductOrderStorage(db *sql.DB) *ProductOrderStorage {
 	return &ProductOrderStorage{db: db}
 }
 
-func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (models.ProductOrder, error) {
+func (s *ProductOrderStorage) GetProductOrderByOrderID(orderID int) (models.ProductOrder, error) {
 	queryProductOrder := `SELECT Product_order_id, order_id, product_id, quantity FROM product_order WHERE order_id = ?`
 
 	row := s.db.QueryRow(queryProductOrder, orderID)
@@ -45,7 +45,7 @@ func (s *ProductOrderStorage) GetProductOrderByID(orderID int) (models.ProductOr
 	return p, nil
 }
 
-func (s *ProductOrderStorage) GetProductOrdersByIDs(orderIDs []int) ([]models.ProductOrder, error) {
+func (s *ProductOrderStorage) GetProductOrdersByOrderIDs(orderIDs []int) ([]models.ProductOrder, error) {
 	placeholders := strings.Repeat("?,", len(orderIDs)-1) + "?"
 
 	queryProductOrder := fmt.Sprintf(`SELECT Product_order_id, product_id, order_id, quantity FROM product_order WHERE order_id IN (%s)`, placeholders)

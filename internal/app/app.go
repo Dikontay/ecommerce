@@ -53,7 +53,7 @@ func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) 
 
 	var data = make(map[string][]models.OrderInfoDTO)
 
-	productOrders, err := a.Repository.ProductOrder.GetProductOrdersByIDs(orderIDs)
+	productOrders, err := a.Repository.ProductOrder.GetProductOrdersByOrderIDs(orderIDs)
 
 	if err != nil {
 		fmt.Println("GET PRODUCTS BY ID ERR")
@@ -87,7 +87,7 @@ func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) 
 			return nil, err
 		}
 		for j := range productOrders {
-			productOrder, err := a.Repository.ProductOrder.GetProductOrderByID(productOrders[j].OrderID)
+			productOrder, err := a.Repository.ProductOrder.GetProductOrderByOrderID(productOrders[j].OrderID)
 			if err != nil {
 				return nil, err
 			}
