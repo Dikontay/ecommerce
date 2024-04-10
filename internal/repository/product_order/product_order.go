@@ -14,6 +14,7 @@ type ProductOrderStorage struct {
 type ProductOrderRepo interface {
 	GetProductOrderByOrderID(orderID int) (models.ProductOrder, error)
 	GetProductOrdersByOrderIDs(orderIDs []int) ([]models.ProductOrder, error)
+	GetNumberOfProductOrdersByOrderIDs(orderIDs []int) (int, error)
 }
 
 func NewProductOrderStorage(db *sql.DB) *ProductOrderStorage {
@@ -50,19 +51,21 @@ func (s *ProductOrderStorage) GetProductOrdersByOrderIDs(orderIDs []int) ([]mode
 
 	queryProductOrder := fmt.Sprintf(`SELECT Product_order_id, product_id, order_id, quantity FROM product_order WHERE order_id IN (%s)`, placeholders)
 
-	// Подготавливаем аргументы для запроса
 	args := make([]interface{}, len(orderIDs))
 	for i, id := range orderIDs {
 		args[i] = id
 	}
 
-	// Теперь используем args... для передачи аргументов
 	rows, err := s.db.Query(queryProductOrder, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var productOrders []models.ProductOrder
+	numberOfProductOrders, err := s.GetNumberOfProductOrdersByOrderIDs(orderIDs)
+	if err != nil {
+		return nil, err
+	}
+	productOrders := make([]models.ProductOrder, 0, numberOfProductOrders)
 	for rows.Next() {
 		var id, productID, orderID, quantity int
 		if err := rows.Scan(&id, &productID, &orderID, &quantity); err != nil {
@@ -81,4 +84,23 @@ func (s *ProductOrderStorage) GetProductOrdersByOrderIDs(orderIDs []int) ([]mode
 	}
 
 	return productOrders, nil
+}
+
+func (s *ProductOrderStorage) GetNumberOfProductOrdersByOrderIDs(orderIDs []int) (int, error) {
+	placeholders := strings.Repeat("?,", len(orderIDs)-1) + "?"
+
+	queryProductOrder := fmt.Sprintf(`SELECT count(*) as number FROM product_order  WHERE order_id IN (%s)`, placeholders)
+
+	args := make([]interface{}, len(orderIDs))
+	for i, id := range orderIDs {
+		args[i] = id
+	}
+
+	row := s.db.QueryRow(queryProductOrder, args...)
+
+	var result int
+	if err := row.Scan(&result); err != nil {
+		return 0, err
+	}
+	return result, nil
 }

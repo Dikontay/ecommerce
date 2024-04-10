@@ -50,53 +50,56 @@ func validate(args []string) ([]int, error) {
 }
 
 func (a *App) GetData(orderIDs []int) (map[string][]models.OrderInfoDTO, error) {
+	// Using a map to prevent repetitive database queries for the same product
+	productCache := make(map[int]models.Product)
+	shelfCache := make(map[int]*models.Shelf)
 
 	var data = make(map[string][]models.OrderInfoDTO)
 
+	// Fetch product orders once
 	productOrders, err := a.Repository.ProductOrder.GetProductOrdersByOrderIDs(orderIDs)
-
 	if err != nil {
-		fmt.Println("GET PRODUCTS BY ID ERR")
-		return nil, err
-	}
-	productIDs := helpers.GetProductIdsFromStruct(productOrders)
-
-	if err != nil {
-
-		return nil, err
+		return nil, fmt.Errorf("GET PRODUCTS BY ID ERR: %w", err)
 	}
 
-	productShelves, err := a.Repository.ProductShelve.GetProductShelvesByProductIDs(productIDs)
-
-	if err != nil {
-
-		return nil, err
+	// Map product IDs to product orders
+	productIDToOrders := make(map[int][]models.ProductOrder)
+	for _, po := range productOrders {
+		productIDToOrders[po.ProductID] = append(productIDToOrders[po.ProductID], po)
 	}
 
-	for i := range productShelves {
-		shelve, err := a.Repository.Shelve.GetShelfByID(productShelves[i].ShelveID)
+	// Fetch product shelves once
+	productShelves, err := a.Repository.ProductShelve.GetProductShelvesByProductIDs(helpers.GetProductIdsFromStruct(productOrders))
+	if err != nil {
+		return nil, fmt.Errorf("GET PRODUCT SHELVES ERR: %w", err)
+	}
 
-		if err != nil {
-
-			return nil, nil
-		}
-
-		product, err := a.Repository.Product.GetProductByID(productShelves[i].ProductID)
-		if err != nil {
-			fmt.Println("GET Product ERR")
-			return nil, err
-		}
-		for j := range productOrders {
-			productOrder, err := a.Repository.ProductOrder.GetProductOrderByOrderID(productOrders[j].OrderID)
+	for _, ps := range productShelves {
+		shelve, ok := shelfCache[ps.ShelveID]
+		if !ok {
+			shelve, err = a.Repository.Shelve.GetShelfByID(ps.ShelveID)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("GET SHELF ERR: %w", err)
 			}
-			data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: product, ProductOrder: productOrder})
+			shelfCache[ps.ShelveID] = shelve
 		}
 
-	}
-	return data, nil
+		orders := productIDToOrders[ps.ProductID]
+		for _, po := range orders {
+			product, ok := productCache[po.ProductID]
+			if !ok {
+				product, err = a.Repository.Product.GetProductByID(po.ProductID)
+				if err != nil {
+					return nil, fmt.Errorf("GET Product ERR: %w", err)
+				}
+				productCache[po.ProductID] = product
+			}
 
+			data[shelve.Name] = append(data[shelve.Name], models.OrderInfoDTO{Product: product, ProductOrder: po})
+		}
+	}
+
+	return data, nil
 }
 
 func (a *App) outputData(data map[string][]models.OrderInfoDTO) {
